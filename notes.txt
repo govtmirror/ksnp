@@ -1,0 +1,23 @@
+Tree types
+-Allele Counts -> labeled internal node with shared SNPs at a node
+-Tip Allele counts -> as above with SNPs at tips exclusive to strain
+-Node lable -> as Allele Cont with node number
+
+Phylogenetic trees
+-All trees are made using parisomony informative unless specified as ML or NJ.  ML may be better with bacteria.
+-Parisomony informative is shown to be most accurate most often
+-ML and NJ trees are created using all SNPs
+-By default parisomony trees are made using all, majority and core SNPs
+-Because a concatamer of SNPs trees scale is relative to total SNPs, not per SNP changes
+
+Skeleton workflow
+-Within a single genome allele conflicts are removed.  Conflicts are more than one SNP tpe in kmer
+-Find kmers with allelic variation across genomes
+-Find SNP positions in finished genomes
+-Build matrix and trees
+-Cluster groups/nodes
+-Annotate
+
+Homoplastic SNPs map to multiple nodes
+
+Run in debug mode to keep all files output by kSNP

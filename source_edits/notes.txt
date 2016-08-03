@@ -1,0 +1,103 @@
+Woring directy...
+[tstuber@aapiaam0vtanlz1 test]$ ls
+in_list  out_test  starting_files
+
+After running... MakeKSNP3infile starting_files/ in_list A
+
+tcsh
+set kSNP=/usr/local/kSNP3
+set thisDir = `pwd`
+set annotate_list="nonexistent_file"
+set genbankFile="nonexistent_file"
+set all_annotations=0
+set k=19
+set fasta_list="in_list"
+set dir="out_test"
+set num_cpus=8
+
+#the add_paths3 program looks to simple make full working path
+set dir = `$kSNP/add_paths3 "$dir" "$thisDir"`
+set fasta_list = `$kSNP/add_paths3 "$fasta_list" "$thisDir"`
+cd "$dir"
+cp -f "$fasta_list" fasta_list
+
+# merge the fasta file, aka have just one fasta header per file
+# outputs the fsplit# files
+set count=0
+set num_seqs=`wc -l fasta_list | awk '{print $1}' `
+echo "Number of input sequences: $num_seqs "
+printf "" >! fileName2genomeName
+while ($count < $num_seqs)
+    set name=`awk -F'\011' -v c="$count" 'FNR==c+1 {print $2}' fasta_list`
+    set file=`awk -F'\011' -v c="$count" 'FNR==c+1 {print $1}' fasta_list`
+    printf "$count\t$name\t$file\n"
+    $kSNP/merge_fasta_reads3  "$file" >! fsplit$count
+    printf "fsplit$count\t$name\n" >> fileName2genomeName
+    @ count ++
+end
+
+#Run Jellyfish
+#One sample example
+foreach f (fsplit0)
+#For multiple
+foreach f (fsplit*[0-9])
+      if !(-s kmers_all.$f) then
+        echo "$f"
+        $kSNP/jellyfish count -C -o Jelly.$f -m $k -s 1000000000  -t $num_cpus  $f
+        printf "" >! unsortedkmers.$f
+end
+# output binary Jelly.fsplit0_0
+
+foreach i (Jelly."$f"_*)
+    echo "$i"
+    $kSNP/jellyfish dump -c $i  >> unsortedkmers."$f"
+end
+date; sort unsortedkmers.$f >! kmers_all.$f; date
+
+rm -f unsortedkmers.$f
+
+# Remove kmers that occur less than freq=average of median and mean kmer frequency for that genome.
+awk '{print $2}' kmers_all.$f > ! freq.$f
+set min_kmer_coverage=`$kSNP/get_quantile3 freq.$f`
+echo "minimum kmer coverage for $f is $min_kmer_coverage"
+awk -v m=$min_kmer_coverage '$2>=m {print}' kmers_all.$f >! kmers.$f
+
+# for one --> 
+median 1
+mean 1.02125028873621
+
+# for many genomes --> 
+
+# Remove kmers from a genome if there are conflicting alleles in that genome
+mkdir Dir.$f
+$kSNP/subset_mers3 ../kmers.$f
+cd Dir.$f
+$kSNP/subset_mers3 ../kmers.$f
+printf "" >! cmds_remove_conflicting 
+# makes file list as when making in_list
+foreach subset (*.mers)
+    echo "$kSNP/delete_allele_conflicts3 $subset" >> cmds_remove_conflicting
+    end
+$kSNP/parallel_commands3 $num_cpus cmds_remove_conflicting
+cd ..
+
+$kSNP/subset_mer_list3 > ! mer_list
+printf "" >! cmds_sort
+foreach subset (`cat mer_list`)
+    echo "sort  -m  -u Dir.*/$subset.conflictsDeleted  > $subset" >> cmds_sort
+end
+$kSNP/parallel_commands3 $num_cpus cmds_sort
+
+printf "" >! cmds_pick_snps
+foreach subset (`cat mer_list`)
+    echo "$kSNP/pick_snps_from_kmer_genome_counts3 $subset > SNP_loci.$subset.fasta" >> cmds_pick_snps
+end
+
+printf "" >! cmds_find_allele
+foreach f (fsplit*)
+    foreach subset (`cat mer_list`)
+echo "$kSNP/find_allele3 SNP_loci.$subset.fasta  Dir.$f/$subset.conflictsDeleted $f > Dir.$f/SNPs.$subset" >> cmds_find_allele
+    end
+end
+
+$kSNP/parallel_commands3 $num_cpus cmds_find_allele

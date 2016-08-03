@@ -1,0 +1,85 @@
+#!/usr/bin/perl
+#v3.0
+
+# get_genbank_file.pl fastainput  
+no warnings 'deprecated';
+
+use LWP::Simple;
+
+my $fasta=shift @ARGV;
+print "fasta: $fasta\n";
+my $output=shift @ARGV;
+
+open IN,"$fasta" ;
+my %strain2gi=();
+while (my $line=<IN>) {
+   
+    if ($line =~/^>(\S+)\s/) {
+	$gi="none";
+	chomp $line;
+  	$name =$1;
+
+	$name =~ s/\|/_/g;
+	$name =~ s/,//g;
+	$name =~ s/\+/plus/g;
+	$name =~ s/\[//g;
+	$name =~ s/\]//g;
+	$name =~ s/\(//g;
+	$name =~ s/\)//g;
+	$name =~ s/\//-/g;
+	$name =~ s/[\t\r\s]+/_/g;
+	$name =~ s/_+/_/g;
+	$name =~ s/\://g;
+	
+	
+	$name2 =substr($name,0,88);
+	$name=$name2;
+
+
+    }
+    if ($line =~/^>.*gi\|(\d+)/ || $line =~/^>.*_gi(\d+)/  || $line =~/^>.*_gi_(\d+)/  || $line =~/^>gi(\d+)/) {
+	$gi=$1;
+    } 
+    #print "strain2gi $name: $gi\n";
+    $strain2gi{$name}=$gi;
+    
+}
+close IN;
+
+open OUT , ">$output" or die $!;
+foreach my $gi (sort values %strain2gi) {
+    print "gi: $gi\n";
+    
+    
+    my $genbank =
+	get("http://www.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=$gi&rettype=gbwithparts&retmode=text");
+	#get("http://www.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=$gi&rettype=ft&retmode=text");
+
+# may want to change to use ft instead of gbwithparts file, since it's smaller without the actual sequence.
+# BUT the ft (feature table)  download does NOT have mat_pep which is really important if you want to label actual proteins after cleavage. ft just has e.g. "structural polyprotein" for viral polyproteins, but not nsP1, nsP2, env1, etc.
+#   my $info =
+#    get("http://www.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=$gi&rettype=ft&retmode=text");
+    #  print "$genbank\n";
+    #  sleep(3);
+    # print OUT "$info\n";
+    
+    sleep(3);
+    #  ncbi doesn't respond with a nice error responce code when the search is unsuccesful so
+    #  have to check for ERROR string.
+    if($genbank=~/^ERROR/){
+	print STDERR "$gi\t$genbank\n"; 
+    } else {
+	print OUT $genbank;
+    }
+}
+close OUT;
+
+
+
+
+
+
+exit 1;
+
+
+

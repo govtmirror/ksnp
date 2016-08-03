@@ -2,7 +2,7 @@
 
 ##OVERVIEW
 
-kSNP is open sourced and available at:   
+kSNP is open source and available at:   
 https://sourceforge.net/projects/ksnp/files/
 
 kSNP was developed by Shea Gardner, Tom Slezak and Barry Hall   
@@ -15,17 +15,16 @@ kSNP is an easy-to-use reference free SNP caller.  Its application is for viral 
 
 ##GOALS OF THIS REPOSITORY
 
-- Environment for continued development
+- Continued development
 - Provide additional documentation and commenting of source files
 - Collaboration
 
 ##DEVELOPMENT PROJECTS
 
-- Add VCFs to an analysis and along with adding new SNPs
+- Add VCFs to an analysis along with adding new SNPs
 - Label and locate SNP positions by reference annotation and kmer sequence
 - Label SNPs at nodes
 - Give SNPs a quality value
 - Speed improvements
-- How does the kmer used in the assembly affect the kmer used in kSNP
-- Instead of removing conflicts change to IUPAC mixed SNP nomenclature
+- Change conflicts to IUPAC mixed SNP nomenclature
 - Remove homoplastic snps from analysis/tree building

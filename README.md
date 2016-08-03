@@ -16,7 +16,7 @@ kSNP is an easy-to-use reference free SNP caller.  Its application is for viral 
 ##GOALS OF THIS REPOSITORY
 
 - Continued development
-- Provide additional documentation and commenting of source files
+- Provide additional documentation and commenting of source files and output files
 - Collaboration
 
 ##DEVELOPMENT PROJECTS

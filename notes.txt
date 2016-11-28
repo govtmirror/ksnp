@@ -21,3 +21,11 @@ Skeleton workflow
 Homoplastic SNPs map to multiple nodes
 
 Run in debug mode to keep all files output by kSNP
+
+Find SNPs on branch...
+less Node_SNP_counts.parsimony and compare with tree_AlleleCounts.parsimony.tre.  First number is node, second number is Number of SNPs.  Then search Internal node in ClusterInfo.parsimony
+Example.  On the tre file: tree_AlleleCounts.parsimony.tre, see a group, 32, to see.
+grep "Internal.Node.32" ClusterInfo.parsimony | wc -l
+
+Get context sequence. (Core is "1") and grep it against SNP_annotations
+

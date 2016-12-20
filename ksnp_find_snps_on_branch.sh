@@ -36,10 +36,10 @@ echo "vcf_path: $vcf_path"
 for i in `cat snp_context_list_node-${1}.txt`; do
     position=`grep "$i" SNP_annotations | awk '{print $10}'`
     echo "*** position: $position"
-    awk -v var=$position '$2==var {print FILENAME, $0}' ${vcf_path}/*
-    totalingroup=$(awk -v var=$position '$2==var {print FILENAME, $0}' ${vcf_path}/*)
+    #awk -v var=$position '$2==var {print FILENAME, $0}' ${vcf_path}/*
+    totalingroup=$(awk -v var=$position '$2==var {print FILENAME, $0}' ${vcf_path}/* | wc -l)
     printf "\n\nAt position $position of node $1 there are $totalingroup samples\n\n"
-    read -p "Press Enter to continue through SNP list"
+    #read -p "Press Enter to continue through SNP list"
 done
 
 
